@@ -1,2 +1,2 @@
-# PacMan
+# Minesweeper
 312 project
