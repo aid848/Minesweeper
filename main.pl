@@ -1,5 +1,5 @@
 :- use_module(library(pce)).
-:- include('map.pl').
+:- include('eventHandlers.pl').
 
 % Game config
 dims(X,Y) :- X is 400, Y is 400.
@@ -35,9 +35,12 @@ init :-
     % thread_create(countdown(X).),
     minecounter(0,=,R),
     mapSize(MX,MY),
-    generateStartingState(MX,MY,MAP),
+    % map of tileStates
+    generateStartingState(MX,MY,STATEMAP),
+    % placeholder for map of mines
+    exampleMap(MINESMAP),
     % countdown(0),
-    placeMap(P).
+    placeMap(P,MINESMAP,STATEMAP).
 
 
 % loads image into parent view
@@ -49,20 +52,20 @@ addPrologCallBack(TARGET, CLICK, FUNCTION, ARGS) :- send(TARGET, recogniser,clic
 % gets both position coords from an xpce object
 getTilePos(Tile,X,Y) :- get(Tile,x,X),get(Tile,y,Y).
 
-% removed an xpce bitmap and draws a new one in the same place as the old one based on the path to an acceptable image
-swapIcon([OLD,NEW,P]) :- getTilePos(OLD,X,Y),free(OLD), send(P,display,new(I,bitmap(NEW)), point(X,Y)),b_setVal(mark,"E").
-
 % call to setup playable map, uses one indexed coords like the map representation
-placeMap(P) :- placeMapHelper(P,1,1).
-placeMapHelper(P,X,Y) :- mapSize(_,MY),Y=<MY, Y1 is Y+1,placeMapHelperRow(P,X,Y),placeMapHelper(P,X,Y1).
+placeMap(P,MINESMAP,STATEMAP) :- placeMapHelper(P,MINESMAP,STATEMAP,1,1).
+placeMapHelper(P,MINESMAP,STATEMAP,X,Y) :- mapSize(_,MY),Y=<MY, Y1 is Y+1,placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y),placeMapHelper(P,MINESMAP,STATEMAP,X,Y1).
 
 % Places a map tile row
 % TODO change the callback to the interaction handlers 
-placeMapHelperRow(P,X,Y) :- mapSize(MAXX,_),X<MAXX,X1 is X + 1,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,swapIcon,[I,'./icons/down.xpm',P]),addPrologCallBack(I,right,swapIcon,[I,'./icons/flag.xpm',P]), placeMapHelperRow(P,X1,Y). 
-placeMapHelperRow(P,X,Y) :- mapSize(MAXX,_),X=:=MAXX,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,swapIcon,[I,'./icons/down.xpm',P]),addPrologCallBack(I,right,swapIcon,[I,'./icons/flag.xpm',P]).
+placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :- mapSize(MAXX,_),X<MAXX,X1 is X + 1,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,P]),addPrologCallBack(I,right,handleRightClick,[I,STATEMAP,P]), placeMapHelperRow(P,MINESMAP,STATEMAP,X1,Y). 
+placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :- mapSize(MAXX,_),X=:=MAXX,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,P]),addPrologCallBack(I,right,handleRightClick,[I,STATEMAP,P]).
 
 % Map the internal coords to screen space (xpm images are 16x16)
 mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X2 is (X1 - 1) * W + L, Y2 is (Y1 - 1) * H + T.
+
+% Map the screen space (X2,Y2) to internal coords (X1,Y1)
+gridToMap(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X1 is (X2 - L) / W + 1, Y1 is (Y2 - T) / H + 1.
 
 % countdown timer, blocks so needs to be run on a separate thread :(
 countdown(X) :- send(@c,string,X), sleep(1),X1 is X + 1, countdown(X1).
