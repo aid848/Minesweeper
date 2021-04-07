@@ -58,8 +58,8 @@ placeMapHelper(P,MINESMAP,STATEMAP,X,Y) :- mapSize(_,MY),Y=<MY, Y1 is Y+1,placeM
 
 % Places a map tile row
 % TODO change the callback to the interaction handlers 
-placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :- mapSize(MAXX,_),X<MAXX,X1 is X + 1,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,P]),addPrologCallBack(I,right,handleRightClick,[I,STATEMAP,P]), placeMapHelperRow(P,MINESMAP,STATEMAP,X1,Y). 
-placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :- mapSize(MAXX,_),X=:=MAXX,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,P]),addPrologCallBack(I,right,handleRightClick,[I,STATEMAP,P]).
+placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :- mapSize(MAXX,_),X<MAXX,X1 is X + 1,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]), placeMapHelperRow(P,MINESMAP,STATEMAP,X1,Y). 
+placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :- mapSize(MAXX,_),X=:=MAXX,mapToGrid(X,Y,A,B),loadimg(P,I,'./icons/unmarked.xpm',A,B),addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
 
 % Map the internal coords to screen space (xpm images are 16x16)
 mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X2 is (X1 - 1) * W + L, Y2 is (Y1 - 1) * H + T.
