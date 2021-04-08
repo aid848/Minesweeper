@@ -1,4 +1,5 @@
 :- use_module(library(pce)).
+:- use_module(library(time)).
 
 % Game config
 dims(X,Y) :- X is 400, Y is 400.
@@ -10,6 +11,7 @@ mines(N) :- N is 100.
 % Any named XPCE objects must be freed here, don't use named objects except for debug
 cleanup :- free(@c),free(@r),free(@s).
 
+
 mineFrame(MAINFRAME) :- new(MAINFRAME,frame('Minesweeper')).
 
 minePlayingField(P,MAINFRAME) :- 
@@ -18,15 +20,16 @@ minePlayingField(P,MAINFRAME) :-
     dims(A,B),
     send(P,size,size(A,B)).
 
-mineControls(P) :- 
-    send(P, display,new(@c, text(123)), point(300, 0)),
+mineControls(P,MA,ID) :- 
+    send(P, display,new(@c, text(0)), point(270, 0)),
     send(@c,font,font(helvetica, bold, 30)),
     send(@c,colour,red),
-    send(P, display,new(@s, text(0)), point(100, 0)),
+    mines(M),
+    send(P, display,new(@s, text(M)), point(75, 0)),
     send(@s,font,font(helvetica, bold, 30)),
     send(@s,colour,red),
-    send(P,display, new(@r,bitmap('./icons/smileybase.xpm')), point(200,0)),
-    addPrologCallBack(@r,left,restart,[P]).
+    send(P,display, new(@r,bitmap('./icons/smileybase.xpm')), point(190,0)),
+    addPrologCallBack(@r,left,restart,[P,MA]).
 
 % gets both position coords from an xpce object
 getTilePos(Tile,X,Y) :- get(Tile,x,X),get(Tile,y,Y).
@@ -71,19 +74,47 @@ mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X2 is (X1 - 1) * W + L, Y2 
 % Map the screen space (X2,Y2) to internal coords (X1,Y1)
 gridToMap(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X1 is (X2 - L) / W + 1, Y1 is (Y2 - T) / H + 1.
 
-% countdown timer, blocks so needs to be run on a separate thread :(
-countdown(X) :- send(@c,string,X), sleep(1),X1 is X + 1, countdown(X1).
+% countdown timer working
+countdown(X,P) :-
+    get(P,value,A),
+    atom_number(A,X),
+    X1 is X + 1,
+    send(P,value,X1), 
+    alarm(1, in_pce_thread(countdown(X,P)),_,[remove(false)]).
+    % alarm(1, countdown(X,P),_,[remove(false)]).
 
-% TODO this is broken 
-% convert a number X into three position images for the gui
-digitalClock(X,A,B,C) :- C is X rem 100, B is X rem 10, A is X rem 1.
+set_flag(aha,3).
+get_flag(aha,X).
 
-% Increments the number of mines based on the operator
+
+% Increments the number of flags based on the operator
+flagcounter(X,+,R) :- R is X + 1.
+flagcounter(X,-,R) :- R is X - 1.
+flagcounter(X,=,R) :- R is X.
+
 minecounter(X,+,R) :- R is X + 1.
 minecounter(X,-,R) :- R is X - 1.
 minecounter(X,=,R) :- R is X.
 
-% TODO
-% thread_create(countdown(X).),
-startCounter(N).
+% manually change mines left counter
+incMine(_) :- get(@s,value,A),atom_number(A,X),mines(N),X < N,X1 is X + 1,send(@s,string,X1).
+decMine(_) :- get(@s,value,A),atom_number(A,X),X>0,X1 is X - 1,send(@s,string,X1).
+calcMine(X) :- minecounter(A,=,_),flagcounter(B,=,_),X is A - B,send(@s,string,X).
 
+startCounter(N,P) :- in_pce_thread(countdown(N,P)).
+
+% counter(N) :- send(@c,string,5),N1 is N+1,counter(N1) .
+
+% timer(ID) :- alarm(1,countdown(0,@c,ID),ID).
+
+% countdown(X,P,Id) :- 
+%     get(@c,value,A),
+%     atom_number(A,X),
+%     X1 is X + 1,
+%     send(@c,string,X1),
+%     alarm(1,countdown(0,@c,ID),_).
+
+% countdown timer, blocks so needs to be run on a separate thread :(
+% countdown(X,P) :- send(P,string,X), sleep(1), X1 is X + 1, countdown(X1,P).
+
+% countdown timer 
