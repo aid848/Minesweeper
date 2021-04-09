@@ -1,6 +1,7 @@
 :- use_module(library(pce)).
+:- use_module(library(time)).
 
-% Game config
+% Game config, sizes and other constants here.
 dims(X,Y) :- X is 400, Y is 400.
 mapSize(X,Y) :- X is 16, Y is 16.
 imgs(X,Y) :- X is 16, Y is 16.
@@ -8,28 +9,42 @@ padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
 mines(N) :- N is 100.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
-cleanup :- free(@c),free(@r),free(@s).
+cleanup :- free(@c),free(@r),free(@s), free(@w).
 
+% sets up game window frame
 mineFrame(MAINFRAME) :- new(MAINFRAME,frame('Minesweeper')).
 
+% establishes the main field area shell
 minePlayingField(P,MAINFRAME) :- 
     new(P, picture),
     send(MAINFRAME,append,P),
     dims(A,B),
     send(P,size,size(A,B)).
 
-mineControls(P) :- 
-    send(P, display,new(@c, text(123)), point(300, 0)),
+% inits gui elements of the top bar and sets their properties such as fonts
+mineControls(P,MA) :- 
+    send(P, display,new(@c, text(0)), point(270, 0)),
     send(@c,font,font(helvetica, bold, 30)),
     send(@c,colour,red),
-    send(P, display,new(@s, text(0)), point(100, 0)),
+    mines(M),
+    send(P, display,new(@s, text(M)), point(75, 0)),
     send(@s,font,font(helvetica, bold, 30)),
     send(@s,colour,red),
-    send(P,display, new(@r,bitmap('./icons/smileybase.xpm')), point(200,0)),
-    addPrologCallBack(@r,left,restart,[P]).
+    send(P,display,new(@w,text(1)), point(190,0)),
+    send(P,display, new(@r,bitmap('./icons/smileybase.xpm')), point(190,0)),
+    addPrologCallBack(@r,left,restart,[P,MA]).
 
 % gets both position coords from an xpce object
 getTilePos(Tile,X,Y) :- get(Tile,x,X),get(Tile,y,Y).
+
+% removed an xpce bitmap and draws a new one in the same place as the old one based on the path to an acceptable image
+swapIcon([OLD,NEW,MINESMAP,STATEMAP,P]) :- 
+    getTilePos(OLD,X,Y),
+    free(OLD),
+    send(P,display,
+    new(I,bitmap(NEW)), point(X,Y)),
+    addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),
+    addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
 
 % loads image into parent view
 loadimg(PARENT,IMG,PICTURE,X,Y) :-
@@ -38,11 +53,9 @@ loadimg(PARENT,IMG,PICTURE,X,Y) :-
     point(X,Y)),
     send(IMG,size,size(32,32)).
 
-
 % Adds a prolog callback by sending it through an xpce message(target, callback, arg1,args2,...)
 addPrologCallBack(TARGET, CLICK, FUNCTION, ARGS) :-
     send(TARGET, recogniser,click_gesture(CLICK, '', single, message(@prolog,FUNCTION,prolog(ARGS)))).
-
 
 % Call to setup playable map, uses one indexed coords like the map representation
 placeMap(P,MINESMAP,STATEMAP) :- placeMapHelper(P,MINESMAP,STATEMAP,1,1).
@@ -66,24 +79,32 @@ placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :-
     addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
 
 % Map the internal coords to screen space (xpm images are 16x16)
-mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X2 is (X1 - 1) * W + L, Y2 is (Y1 - 1) * H + T.
+mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,_,L,_),X2 is (X1 - 1) * W + L, Y2 is (Y1 - 1) * H + T.
 
 % Map the screen space (X2,Y2) to internal coords (X1,Y1)
-gridToMap(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X1 is (X2 - L) / W + 1, Y1 is (Y2 - T) / H + 1.
+gridToMap(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,_,L,_),X1 is (X2 - L) / W + 1, Y1 is (Y2 - T) / H + 1.
 
-% countdown timer, blocks so needs to be run on a separate thread :(
-countdown(X) :- send(@c,string,X), sleep(1),X1 is X + 1, countdown(X1).
+% countdown timer gui updater
+countdown(X,P,W) :-
+    get(W,value,A),
+    atom_number(A,0),
+    X1 is X + 1,
+    get(P,value,B),
+    atom_number(B,X),
+    send(P,string,X1), 
+    alarm(1, countdown(X1,P,W),_,[remove(true)]).
 
-% TODO this is broken 
-% convert a number X into three position images for the gui
-digitalClock(X,A,B,C) :- C is X rem 100, B is X rem 10, A is X rem 1.
+% called if gameover, stops counter
+stopCounter :- 
+    send(@w,string,1).
 
-% Increments the number of mines based on the operator
-minecounter(X,+,R) :- R is X + 1.
-minecounter(X,-,R) :- R is X - 1.
-minecounter(X,=,R) :- R is X.
+% doesn't work, don't use
+restartCounter :- 
+    send(@w,string,0),alarm(1, countdown(0,@c,@w),_,[remove(true)]).
 
-% TODO
-% thread_create(countdown(X).),
-startCounter(N).
+% call to change mines left counter
+unflag :- get(@s,value,A),atom_number(A,X),mines(N),X < N,X1 is X + 1,send(@s,string,X1).
+flag :- get(@s,value,A),atom_number(A,X),X>0,X1 is X - 1,send(@s,string,X1).
 
+% checks if all flags used, use to check for game completion
+allFlags :- get(@s,value,A),atom_number(A,X), X =:= 0.
