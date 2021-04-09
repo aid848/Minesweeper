@@ -110,6 +110,13 @@ generateStartStateMap(ColN, RowN, [R|T]) :-
 	setRow(RowN, R, Val),
 	generateStartStateMap(Col1, RowN, T).
 
+
+% Wrapper for all below startMap
+startMap(NX, NY, Output) :-
+	generateZeroMap(NX, NY, M),
+	generateMineMap(NX, NY, Mines),
+	generateStartMap(Mines, NX, NY, NX, NY, M, Output).
+
 % generateStartMap(MM, X, Y, NX, NY, M, Output) constructs a full starting tile map
 % given:
 % 		MM:  		NX x NY matrix of mine positions and empty tiles
