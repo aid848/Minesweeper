@@ -6,15 +6,12 @@
 % run the program with this
 run :- cleanup,init.
 
-% game setup
+% game setup and init
 init :- 
     mineFrame(MAINFRAME),
     minePlayingField(P,MAINFRAME),
-    mineControls(P,MAINFRAME,ID),
+    mineControls(P,MAINFRAME),
     send(P,open),
-    mines(B),
-    minecounter(B,=,Q),
-    flagcounter(0,=,R),
     mapSize(MX,MY),
     % map of tileStates
     generateStartingState(MX,MY,STATEMAP),
@@ -23,7 +20,6 @@ init :-
     send(@w,string,0),
     countdown(0,@c,@w),
     placeMap(P,MINESMAP,STATEMAP).
-    % countdown(0,@c,e).
 
 
 % restart the program

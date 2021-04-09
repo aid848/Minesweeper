@@ -8,9 +8,6 @@
 **		- Restart
 */
 
-% removed an xpce bitmap and draws a new one in the same place as the old one based on the path to an acceptable image
-swapIcon([OLD,NEW,MINESMAP,STATEMAP,P]) :- getTilePos(OLD,X,Y),free(OLD), send(P,display,new(I,bitmap(NEW)), point(X,Y)), addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]), addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
-
 % changes the icon of the left clicked tile depending on what the tile was
 handleLeftClick([OLD,MINESMAP,STATEMAP,P]) :- getTilePos(OLD,X,Y), gridToMap(X1,Y1,X,Y), getTile(X1,Y1,STATEMAP,State), State is 0, getTile(X1,Y1,MINESMAP,Val), Val is 0, setTile(STATEMAP,X1,Y1,2,NEWSTATEMAP), !, swapIcon([OLD,'./icons/down.xpm',MINESMAP,NEWSTATEMAP,P]).
 handleLeftClick([OLD,MINESMAP,STATEMAP,P]) :- getTilePos(OLD,X,Y), gridToMap(X1,Y1,X,Y), getTile(X1,Y1,STATEMAP,State), State is 0, getTile(X1,Y1,MINESMAP,Val), Val is -1, setTile(STATEMAP,X1,Y1,3,NEWSTATEMAP), !, swapIcon([OLD,'./icons/hit.xpm',MINESMAP,NEWSTATEMAP,P]).
