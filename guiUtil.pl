@@ -80,18 +80,10 @@ countdown(X,P,W) :-
     get(W,value,A),
     atom_number(A,0),
     X1 is X + 1,
+    get(P,value,B),
+    atom_number(B,X),
     send(P,string,X1), 
     alarm(1, countdown(X1,P,W),_,[remove(true)]).
-    % alarm(1, countdown(X,P),_,[remove(false)]).
-
-% countdown(X,P,W) :-
-%     get(@c,string,string('stop')),
-%     X1 is X + 1,
-%     send(P,string,X1).
-
-% set_flag(aha,3).
-% get_flag(aha,X).
-
 
 % Increments the number of flags based on the operator
 flagcounter(X,+,R) :- R is X + 1.
