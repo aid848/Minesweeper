@@ -6,10 +6,10 @@ dims(X,Y) :- X is 400, Y is 400.
 mapSize(X,Y) :- X is 16, Y is 16.
 imgs(X,Y) :- X is 16, Y is 16.
 padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
-mines(N) :- N is 100.
+mines(N) :- N is 40.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
-cleanup :- free(@c),free(@r),free(@s), free(@w).
+cleanup :- free(@c),free(@r),free(@s), free(@w), free(@minescount).
 
 % sets up game window frame
 mineFrame(MAINFRAME) :- new(MAINFRAME,frame('Minesweeper')).
@@ -31,6 +31,7 @@ mineControls(P,MA) :-
     send(@s,font,font(helvetica, bold, 30)),
     send(@s,colour,red),
     send(P,display,new(@w,text(1)), point(190,0)),
+    send(P,display,new(@minescount,text(M)), point(190,0)),
     send(P,display, new(@r,bitmap('./icons/smileybase.xpm')), point(190,0)),
     addPrologCallBack(@r,left,restart,[P,MA]).
 
