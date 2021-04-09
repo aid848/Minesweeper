@@ -9,7 +9,7 @@ padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
 mines(N) :- N is 100.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
-cleanup :- free(@c),free(@r),free(@s).
+cleanup :- free(@c),free(@r),free(@s), free(@w).
 
 
 mineFrame(MAINFRAME) :- new(MAINFRAME,frame('Minesweeper')).
@@ -28,6 +28,7 @@ mineControls(P,MA,ID) :-
     send(P, display,new(@s, text(M)), point(75, 0)),
     send(@s,font,font(helvetica, bold, 30)),
     send(@s,colour,red),
+    send(P,display,new(@w,text(1)), point(190,0)),
     send(P,display, new(@r,bitmap('./icons/smileybase.xpm')), point(190,0)),
     addPrologCallBack(@r,left,restart,[P,MA]).
 
@@ -75,16 +76,21 @@ mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X2 is (X1 - 1) * W + L, Y2 
 gridToMap(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,B,L,R),X1 is (X2 - L) / W + 1, Y1 is (Y2 - T) / H + 1.
 
 % countdown timer working
-countdown(X,P) :-
-    get(P,value,A),
-    atom_number(A,X),
+countdown(X,P,W) :-
+    get(W,value,A),
+    atom_number(A,0),
     X1 is X + 1,
-    send(P,value,X1), 
-    alarm(1, in_pce_thread(countdown(X,P)),_,[remove(false)]).
+    send(P,string,X1), 
+    alarm(1, countdown(X1,P,W),_,[remove(true)]).
     % alarm(1, countdown(X,P),_,[remove(false)]).
 
-set_flag(aha,3).
-get_flag(aha,X).
+% countdown(X,P,W) :-
+%     get(@c,string,string('stop')),
+%     X1 is X + 1,
+%     send(P,string,X1).
+
+% set_flag(aha,3).
+% get_flag(aha,X).
 
 
 % Increments the number of flags based on the operator

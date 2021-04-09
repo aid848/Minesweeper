@@ -3,8 +3,6 @@
 :- include('eventHandlers.pl').
 :- include('guiUtil.pl').
 
-run1 :- time(run).
-
 % run the program with this
 run :- cleanup,init.
 
@@ -22,22 +20,15 @@ init :-
     generateStartingState(MX,MY,STATEMAP),
     % placeholder for map of mines
     exampleMap(MINESMAP),
-    placeMap(P,MINESMAP,STATEMAP),
-    countdown(0,@c).
+    send(@w,string,0),
+    countdown(0,@c,@w),
+    placeMap(P,MINESMAP,STATEMAP).
     % countdown(0,@c,e).
 
 
-% works but looks bad, TODO maybe keep frame and redo sub elements
+% restart the program
 restart([P,M]) :- 
     free(P),
     free(M),
     run.
 
-% timer(ID) :- alarm(1,countdown(0,@c,ID),ID).
-
-% countdown(X,P,Id) :- 
-%     get(@c,value,A),
-%     atom_number(A,X),
-%     X1 is X + 1,
-%     send(@c,string,X1),
-%     alarm(1,countdown(0,@c,ID),_).
