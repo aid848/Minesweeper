@@ -79,7 +79,7 @@ placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :-
     addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),
     addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
 
-% Uncovers the covered tiles in STATEMAP
+% Uncovers the covered mines
 uncoverMap(P,MINESMAP) :- uncoverMapHelper(P,MINESMAP,1,1).
 
 % Iterates through the columns of the map
