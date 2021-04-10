@@ -128,8 +128,12 @@ resampleMineMap(NX, NY, Counter, NM, Builder, Out) :-
 	setTile(Builder, ValX, ValY, -1, NewBuilder),
 	resampleMineMap(NX, NY, C1, NM, NewBuilder, Out);
 	!,
-	resampleMineMap(NX, NY, Counter, NM, Builder, Out).
-
+	getTile(X, Y, Builder, 0),
+	!,
+	setTile(Builder, X, Y, -1, NewBuilder),
+	resampleMineMap(NX, NY, C1, NM, NewBuilder, Out).
+	
+	
 
 % Generates a ColN x RowN initial Tile State map - all tiles are covered (100)
 generateStartStateMap(0, _, []) :- !.
