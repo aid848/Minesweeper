@@ -6,10 +6,10 @@ dims(X,Y) :- X is 400, Y is 400.
 mapSize(X,Y) :- X is 16, Y is 16.
 imgs(X,Y) :- X is 16, Y is 16.
 padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
-mines(N) :- N is 100.
+mines(N) :- N is 40.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
-cleanup :- free(@c),free(@r),free(@s), free(@w).
+cleanup :- free(@c),free(@r),free(@s), free(@w), free(@minescount), retractall(flagged(_,_)), retractall(revealed(_,_)), retractall(exploded(_,_)).
 
 % sets up game window frame
 mineFrame(MAINFRAME) :- new(MAINFRAME,frame('Minesweeper')).
@@ -31,6 +31,7 @@ mineControls(P,MA) :-
     send(@s,font,font(helvetica, bold, 30)),
     send(@s,colour,red),
     send(P,display,new(@w,text(1)), point(190,0)),
+    send(P,display,new(@minescount,text(M)), point(190,0)),
     send(P,display, new(@r,bitmap('./icons/smileybase.xpm')), point(190,0)),
     addPrologCallBack(@r,left,restart,[P,MA]).
 
@@ -77,6 +78,38 @@ placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :-
     loadimg(P,I,'./icons/unmarked.xpm',A,B),
     addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),
     addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
+
+% Uncovers the covered tiles in STATEMAP
+uncoverMap(P,MINESMAP) :- uncoverMapHelper(P,MINESMAP,1,1).
+
+% Iterates through the columns of the map
+uncoverMapHelper(P,MINESMAP,X,Y) :-
+    mapSize(_,MAXY),
+    Y=<MAXY,
+    Y1 is Y+1,
+    uncoverMapHelperRow(P,MINESMAP,X,Y),
+    uncoverMapHelper(P,MINESMAP,X,Y1).
+
+% Uncovers a tile row recursively
+uncoverMapHelperRow(P,MINESMAP,X,Y) :-
+    mapSize(MAXX,_),
+    X<MAXX,
+    X1 is X+1,
+    uncoverTile(P,MINESMAP,X,Y),
+    uncoverMapHelperRow(P,MINESMAP,X1,Y).
+
+uncoverMapHelperRow(P,MINESMAP,X,Y) :-
+    mapSize(MAXX,_),
+    X=:=MAXX,
+    uncoverTile(P,MINESMAP,X,Y).
+
+% Uncovers a specific tile
+uncoverTile(P,MINESMAP,X,Y) :- exploded(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/hit.xpm',A,B).
+uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/flag.xpm',A,B).
+uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val \= -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/notmine.xpm',A,B).
+uncoverTile(P,MINESMAP,X,Y) :- getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/mine.xpm',A,B).
+uncoverTile(_,_,X,Y) :- revealed(X,Y), !.
+uncoverTile(P,_,X,Y) :- mapToGrid(X,Y,A,B), loadimg(P,_,'icons/unmarked.xpm',A,B).
 
 % Map the internal coords to screen space (xpm images are 16x16)
 mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,_,L,_),X2 is (X1 - 1) * W + L, Y2 is (Y1 - 1) * H + T.

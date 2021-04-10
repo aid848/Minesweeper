@@ -3,6 +3,8 @@
 :- include('eventHandlers.pl').
 :- include('guiUtil.pl').
 
+:- dynamic flagged/2, revealed/2, exploded/2.
+
 % run the program with this
 run :- cleanup,init.
 
