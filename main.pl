@@ -28,8 +28,5 @@ init :-
 restart([P,M]) :- 
     free(P),
     free(M),
-    retractall(flagged(_,_)),
-    retractall(revealed(_,_)),
-    retractall(exploded(_,_)),
     run.
 

@@ -9,7 +9,7 @@ padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
 mines(N) :- N is 40.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
-cleanup :- free(@c),free(@r),free(@s), free(@w), free(@minescount).
+cleanup :- free(@c),free(@r),free(@s), free(@w), free(@minescount), retractall(flagged(_,_)), retractall(revealed(_,_)), retractall(exploded(_,_)).
 
 % sets up game window frame
 mineFrame(MAINFRAME) :- new(MAINFRAME,frame('Minesweeper')).
@@ -104,15 +104,12 @@ uncoverMapHelperRow(P,MINESMAP,X,Y) :-
     uncoverTile(P,MINESMAP,X,Y).
 
 % Uncovers a specific tile
-uncoverTile(P,MINESMAP,X,Y) :- exploded(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/hit.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
-uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/flag.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
-uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val \= -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/notmine.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
-uncoverTile(P,MINESMAP,X,Y) :- getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/mine.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
+uncoverTile(P,MINESMAP,X,Y) :- exploded(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/hit.xpm',A,B).
+uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/flag.xpm',A,B).
+uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val \= -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/notmine.xpm',A,B).
+uncoverTile(P,MINESMAP,X,Y) :- getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,_,'./icons/mine.xpm',A,B).
 uncoverTile(_,_,X,Y) :- revealed(X,Y), !.
-uncoverTile(P,_,X,Y) :- mapToGrid(X,Y,A,B), loadimg(P,I,'icons/unmarked.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
-
-% A function that does nothing
-nothingFn(_).
+uncoverTile(P,_,X,Y) :- mapToGrid(X,Y,A,B), loadimg(P,_,'icons/unmarked.xpm',A,B).
 
 % Map the internal coords to screen space (xpm images are 16x16)
 mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,_,L,_),X2 is (X1 - 1) * W + L, Y2 is (Y1 - 1) * H + T.
