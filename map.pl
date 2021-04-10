@@ -106,32 +106,25 @@ generateMineMap(ColN, RowN, [R|T]) :-
 % This will be wrapped into startMap() - no need to call directly.
 % NOTE: NM must be s/t Out is sparse -- request no more than 25% of NX x NY
 
-resampleMineMap(_, _, _, NM, NM, _, _).
-resampleMineMap(NX, NY, Counter, NM, Builder, Out) :-
-	Counter is NM - 1,
-	NXX is NX + 1,
-	NYY is NY + 1,
-	random(1, NXX, ValX),
-	random(1, NYY, ValY),
-	getTile(ValX, ValY, Builder, 0),
-	setTile(Builder, ValX, ValY, -1, Out),
-	!.
-	% resampleMineMap(MineMap, NX, NY, Counter, NM, Builder, Out).
+resampleMineMap(_, _, 1, Builder, Out) :-
+	!,
+	getTile(ValX, ValY, Builder, Tile),
+	Tile is 0,
+	setTile(Builder, ValX, ValY, -1, Out).
 
-resampleMineMap(NX, NY, Counter, NM, Builder, Out) :-
+resampleMineMap(NX, NY, NM, Builder, Out) :-
 	NXX is NX + 1,
 	NYY is NY + 1,
 	random(1, NXX, ValX),
 	random(1, NYY, ValY),
-	C1 is Counter + 1,
-	getTile(ValX, ValY, Builder, 0) ->
-	setTile(Builder, ValX, ValY, -1, NewBuilder),
-	resampleMineMap(NX, NY, C1, NM, NewBuilder, Out);
-	!,
-	getTile(X, Y, Builder, 0),
-	!,
-	setTile(Builder, X, Y, -1, NewBuilder),
-	resampleMineMap(NX, NY, C1, NM, NewBuilder, Out).
+	C1 is NM - 1,
+	getTile(ValX, ValY, Builder, Tile),
+	(Tile is 0 ->
+	setTile(Builder, ValX, ValY, -1, NewBuilder);
+	getTile(X, Y, Builder, TileT),
+	TileT is 0,
+	setTile(Builder, X, Y, -1, NewBuilder)),
+	resampleMineMap(NX, NY, C1, NewBuilder, Out).
 	
 	
 
@@ -148,7 +141,7 @@ generateStartStateMap(ColN, RowN, [R|T]) :-
 % Wrapper for main - takes in dimensions and mine count, NM, generates starting map
 startMap(NX, NY, NM, Output) :-
 	generateZeroMap(NX, NY, M),
-	resampleMineMap(NX, NY, 0, NM, M, Mines),
+	resampleMineMap(NX, NY, NM, M, Mines),
 	generateStartMap(Mines, NX, NY, NX, NY, M, Output).
 
 % generateStartMap(MM, X, Y, NX, NY, M, Output) constructs a full starting tile map
