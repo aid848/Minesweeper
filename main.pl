@@ -3,6 +3,8 @@
 :- include('eventHandlers.pl').
 :- include('guiUtil.pl').
 
+:- dynamic flagged/2, revealed/2, exploded/2.
+
 % run the program with this
 run :- cleanup,init.
 
@@ -26,5 +28,8 @@ init :-
 restart([P,M]) :- 
     free(P),
     free(M),
+    retractall(flagged(_,_)),
+    retractall(revealed(_,_)),
+    retractall(exploded(_,_)),
     run.
 

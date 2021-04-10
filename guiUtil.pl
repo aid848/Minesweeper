@@ -79,6 +79,41 @@ placeMapHelperRow(P,MINESMAP,STATEMAP,X,Y) :-
     addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),
     addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
 
+% Uncovers the covered tiles in STATEMAP
+uncoverMap(P,MINESMAP) :- uncoverMapHelper(P,MINESMAP,1,1).
+
+% Iterates through the columns of the map
+uncoverMapHelper(P,MINESMAP,X,Y) :-
+    mapSize(_,MAXY),
+    Y=<MAXY,
+    Y1 is Y+1,
+    uncoverMapHelperRow(P,MINESMAP,X,Y),
+    uncoverMapHelper(P,MINESMAP,X,Y1).
+
+% Uncovers a tile row recursively
+uncoverMapHelperRow(P,MINESMAP,X,Y) :-
+    mapSize(MAXX,_),
+    X<MAXX,
+    X1 is X+1,
+    uncoverTile(P,MINESMAP,X,Y),
+    uncoverMapHelperRow(P,MINESMAP,X1,Y).
+
+uncoverMapHelperRow(P,MINESMAP,X,Y) :-
+    mapSize(MAXX,_),
+    X=:=MAXX,
+    uncoverTile(P,MINESMAP,X,Y).
+
+% Uncovers a specific tile
+uncoverTile(P,MINESMAP,X,Y) :- exploded(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/hit.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
+uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/flag.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
+uncoverTile(P,MINESMAP,X,Y) :- flagged(X,Y), getTile(X,Y,MINESMAP,Val), Val \= -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/notmine.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
+uncoverTile(P,MINESMAP,X,Y) :- getTile(X,Y,MINESMAP,Val), Val is -1, mapToGrid(X,Y,A,B), !, loadimg(P,I,'./icons/mine.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
+uncoverTile(_,_,X,Y) :- revealed(X,Y), !.
+uncoverTile(P,_,X,Y) :- mapToGrid(X,Y,A,B), loadimg(P,I,'icons/unmarked.xpm',A,B), addPrologCallBack(I,left,nothingFn,[I]), addPrologCallBack(I,right,nothingFn,[I]).
+
+% A function that does nothing
+nothingFn(_).
+
 % Map the internal coords to screen space (xpm images are 16x16)
 mapToGrid(X1,Y1,X2,Y2) :- imgs(H,W),padding(T,_,L,_),X2 is (X1 - 1) * W + L, Y2 is (Y1 - 1) * H + T.
 
