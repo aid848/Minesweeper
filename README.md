@@ -28,5 +28,5 @@ Our remake explores the feasibility of using SWI Prolog for classic games using 
 | [Aidan Frost](https://github.com/aid848) | [James Zang](https://github.com/jameszang) | [Connor Quigg](https://github.com/cquigg528)
 
 ### Attributions:
-Icons (MIT LICENSE): https://github.com/HaikuArchives/BeMines
-Original Minesweeper game: Curt Johnson, Robert Donner, Microsoft Corporation.
+1. Icons (MIT LICENSE): https://github.com/HaikuArchives/BeMines
+2. Original Minesweeper game: Curt Johnson, Robert Donner, Microsoft Corporation.
