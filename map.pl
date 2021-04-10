@@ -81,7 +81,6 @@ setTile([NR|Rows], Col, Row, Val, [NR|NRows]) :-
 	Row1 is Row - 1,                             
 	setTile(Rows, Col, Row1, Val, NRows).                                       
 
-     
 
 % ======================== Tile Map (Matrix) Generation ======================
 %
@@ -101,6 +100,37 @@ generateMineMap(ColN, RowN, [R|T]) :-
 	setRowRandom(RowN, R, -1, 1),
 	generateMineMap(Col1, RowN, T).
 
+% resampleMineMap such that #mines is exactly NM.  Counter starts at 0. Mine tiles == -1, 0 otherwise
+% NX, NY are dimensions
+% Builder is NX x NY zero matrix
+% This will be wrapped into startMap() - no need to call directly.
+% NOTE: NM must be s/t Out is sparse -- request no more than 25% of NX x NY
+
+resampleMineMap(_, _, _, NM, NM, _, _).
+resampleMineMap(NX, NY, Counter, NM, Builder, Out) :-
+	Counter is NM - 1,
+	NXX is NX + 1,
+	NYY is NY + 1,
+	random(1, NXX, ValX),
+	random(1, NYY, ValY),
+	getTile(ValX, ValY, Builder, 0),
+	setTile(Builder, ValX, ValY, -1, Out),
+	!.
+	% resampleMineMap(MineMap, NX, NY, Counter, NM, Builder, Out).
+
+resampleMineMap(NX, NY, Counter, NM, Builder, Out) :-
+	NXX is NX + 1,
+	NYY is NY + 1,
+	random(1, NXX, ValX),
+	random(1, NYY, ValY),
+	C1 is Counter + 1,
+	getTile(ValX, ValY, Builder, 0) ->
+	setTile(Builder, ValX, ValY, -1, NewBuilder),
+	resampleMineMap(NX, NY, C1, NM, NewBuilder, Out);
+	!,
+	resampleMineMap(NX, NY, Counter, NM, Builder, Out).
+
+
 % Generates a ColN x RowN initial Tile State map - all tiles are covered (100)
 generateStartStateMap(0, _, []) :- !.
 generateStartStateMap(ColN, RowN, [R|T]) :-
@@ -111,10 +141,10 @@ generateStartStateMap(ColN, RowN, [R|T]) :-
 	generateStartStateMap(Col1, RowN, T).
 
 
-% Wrapper for all below startMap
-startMap(NX, NY, Output) :-
+% Wrapper for main - takes in dimensions and mine count, NM, generates starting map
+startMap(NX, NY, NM, Output) :-
 	generateZeroMap(NX, NY, M),
-	generateMineMap(NX, NY, Mines),
+	resampleMineMap(NX, NY, 0, NM, M, Mines),
 	generateStartMap(Mines, NX, NY, NX, NY, M, Output).
 
 % generateStartMap(MM, X, Y, NX, NY, M, Output) constructs a full starting tile map

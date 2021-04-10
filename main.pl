@@ -17,8 +17,8 @@ init :-
     mapSize(MX,MY),
     % map of tileStates
     generateStartStateMap(MX,MY,STATEMAP),
-    % placeholder for map of mines
-    startMap(MX, MY, MINESMAP),
+    mines(NM),
+    startMap(MX, MY, NM, MINESMAP),
     send(@w,string,0),
     countdown(0,@c,@w),
     placeMap(P,MINESMAP,STATEMAP).
