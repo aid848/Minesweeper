@@ -6,7 +6,7 @@ dims(X,Y) :- X is 400, Y is 400.
 mapSize(X,Y) :- X is 16, Y is 16.
 imgs(X,Y) :- X is 16, Y is 16.
 padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
-mines(N) :- N is 100.
+mines(N) :- N is 40.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
 cleanup :- free(@c),free(@r),free(@s), free(@w).
