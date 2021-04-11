@@ -18,7 +18,7 @@ init :-
     % map of tileStates
     generateStartStateMap(MX,MY,STATEMAP),
     mines(NM),
-    startMap(MX, MY, NM, MINESMAP),
+    once(startMap(MX, MY, NM, MINESMAP)),
     send(@w,string,0),
     countdown(0,@c,@w),
     placeMap(P,MINESMAP,STATEMAP).
