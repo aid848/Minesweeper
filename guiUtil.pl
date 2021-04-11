@@ -143,7 +143,7 @@ restartCounter :-
     send(@w,string,0),alarm(1, countdown(0,@c,@w),_,[remove(true)]).
 
 % call to change mines left counter
-unflag :- get(@s,value,A),atom_number(A,X),mines(N),X1 is X + 1,send(@s,string,X1).
+unflag :- get(@s,value,A),atom_number(A,X),X1 is X + 1,send(@s,string,X1).
 flag :- get(@s,value,A),atom_number(A,X),X1 is X - 1,send(@s,string,X1).
 
 % checks if all flags used, use to check for game completion
