@@ -3,10 +3,18 @@
 :- include('eventHandlers.pl').
 :- include('guiUtil.pl').
 
-:- dynamic flagged/2, revealed/2, exploded/2.
+:- dynamic flagged/2, revealed/2, exploded/2,easy/0,medium/0,hard/0.
 
 % run the program with this
-run :- cleanup,init.
+play(easy) :- retractall(hard),retractall(medium),assert(easy), run.
+play(medium) :- retractall(hard),retractall(easy),assert(medium), run.
+play(hard) :- retractall(easy),retractall(medium),assert(hard), run.
+
+
+run :- \+ easy ,\+ medium,\+ hard, print('Please choose a difficulty and call play').
+run :- easy,\+ medium,\+ hard,cleanup,init.
+run :- medium,\+ easy,\+ hard,cleanup,init.
+run :- hard,\+ medium,\+ easy,cleanup,init.
 
 % game setup and init
 init :- 

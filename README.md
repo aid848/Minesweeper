@@ -23,7 +23,7 @@ Our remake explores the feasibility of using SWI Prolog for classic games using 
 1. Open a command line in the directory of the downloaded repo and enter the following.
 2. ``` swipl ```
 3. ``` [main]. ```
-4. ``` run. ```
+4. Select the difficulty you would like (easy,medium,hard) ``` play(difficulty). ```
 
 
 # Team:

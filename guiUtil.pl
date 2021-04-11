@@ -2,11 +2,20 @@
 :- use_module(library(time)).
 
 % Game config, sizes and other constants here.
-dims(X,Y) :- X is 400, Y is 400.
-mapSize(X,Y) :- X is 16, Y is 16.
 imgs(X,Y) :- X is 16, Y is 16.
-padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
-mines(N) :- N is 40.
+% difficulty related items
+padding(T,B,L,R) :- easy,T is 50, B is 0, L is 100, R is 0.
+padding(T,B,L,R) :- medium,T is 50, B is 0, L is 75, R is 0.
+padding(T,B,L,R) :- hard,T is 50, B is 0, L is 50, R is 0.
+dims(X,Y) :- easy,X is 400, Y is 400.
+dims(X,Y) :- medium,X is 400, Y is 400.
+dims(X,Y) :- hard,X is 400, Y is 400.
+mapSize(X,Y) :- easy,X is 12, Y is 12.
+mapSize(X,Y) :- medium,X is 16, Y is 16.
+mapSize(X,Y) :- hard,X is 18, Y is 18.
+mines(N) :- easy,N is 10.
+mines(N) :- medium,N is 40.
+mines(N) :- hard,N is 60.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
 cleanup :- free(@c),free(@r),free(@s), free(@w),free(@m), free(@minescount), retractall(flagged(_,_)), retractall(revealed(_,_)), retractall(exploded(_,_)).
