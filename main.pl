@@ -10,9 +10,9 @@ run :- cleanup,init.
 
 % game setup and init
 init :- 
-    mineFrame(MAINFRAME),
-    minePlayingField(P,MAINFRAME),
-    mineControls(P,MAINFRAME),
+    mineFrame(@m),
+    minePlayingField(P,@m),
+    mineControls(P,@m),
     send(P,open),
     mapSize(MX,MY),
     % map of tileStates

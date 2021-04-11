@@ -9,7 +9,7 @@ padding(T,B,L,R) :- T is 50, B is 0, L is 75, R is 0.
 mines(N) :- N is 40.
 
 % Any named XPCE objects must be freed here, don't use named objects except for debug
-cleanup :- free(@c),free(@r),free(@s), free(@w), free(@minescount), retractall(flagged(_,_)), retractall(revealed(_,_)), retractall(exploded(_,_)).
+cleanup :- free(@c),free(@r),free(@s), free(@w),free(@m), free(@minescount), retractall(flagged(_,_)), retractall(revealed(_,_)), retractall(exploded(_,_)).
 
 % sets up game window frame
 mineFrame(MAINFRAME) :- new(MAINFRAME,frame('Minesweeper')).
@@ -46,6 +46,13 @@ swapIcon([OLD,NEW,MINESMAP,STATEMAP,P]) :-
     new(I,bitmap(NEW)), point(X,Y)),
     addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),
     addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
+
+swapSimiley(OLD,NEW,P,I) :-
+    getTilePos(OLD,X,Y),
+    free(OLD),
+    send(P,display,
+    new(I,bitmap(NEW)), point(X,Y)),
+    addPrologCallBack(I,left,restart,[P,@m]).
 
 % loads image into parent view
 loadimg(PARENT,IMG,PICTURE,X,Y) :-
@@ -136,8 +143,8 @@ restartCounter :-
     send(@w,string,0),alarm(1, countdown(0,@c,@w),_,[remove(true)]).
 
 % call to change mines left counter
-unflag :- get(@s,value,A),atom_number(A,X),mines(N),X < N,X1 is X + 1,send(@s,string,X1).
-flag :- get(@s,value,A),atom_number(A,X),X>0,X1 is X - 1,send(@s,string,X1).
+unflag :- get(@s,value,A),atom_number(A,X),mines(N),X1 is X + 1,send(@s,string,X1).
+flag :- get(@s,value,A),atom_number(A,X),X1 is X - 1,send(@s,string,X1).
 
 % checks if all flags used, use to check for game completion
 allFlags :- get(@s,value,A),atom_number(A,X), X =:= 0.
