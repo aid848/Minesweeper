@@ -47,7 +47,7 @@ swapIcon([OLD,NEW,MINESMAP,STATEMAP,P]) :-
     addPrologCallBack(I,left,handleLeftClick,[I,MINESMAP,STATEMAP,P]),
     addPrologCallBack(I,right,handleRightClick,[I,MINESMAP,STATEMAP,P]).
 
-swapSimiley(OLD,NEW,P,I) :-
+swapSmiley(OLD,NEW,P,I) :-
     getTilePos(OLD,X,Y),
     free(OLD),
     send(P,display,
