@@ -1,9 +1,9 @@
 # Minesweeper
 A remake of Minesweeper, written for SWI prolog.
 
-<img src=./screenshots/victory.png width=350/>
+<img src=./screenshots/victory.png alt="Victory!" width=350/>
 
-<img src=./screenshots/defeat.png width=350/>
+<img src=./screenshots/defeat.png alt="Defeat..." width=350/>
 
 # Quick Start:
 
